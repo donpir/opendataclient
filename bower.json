@@ -1,0 +1,20 @@
+{
+  "name": "opendataclient",
+  "version": "0.1",
+  "homepage": "https://github.com/donpir/opendataclient",
+  "authors": [
+    "'Donato <'donatopirozzi@gmail.com'>"
+  ],
+  "main": "odc.min.js",
+  "license": "LGPL",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "devDependencies": {
+    "qunit": "~1.22.0"
+  }
+}
