@@ -39,51 +39,65 @@ CKANClient.prototype = (function() {
         xhttp.send(null);
     };//EndFunction.
 
-    var _retrieveListOfDatasets = function(baseUrl, userCallback) {
-        httpGetAsync(baseUrl, function(responseText) {
-            var datasets = [];
+    function jsonp(url, callback) {
+        var callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
+        window[callbackName] = function(data) {
+            delete window[callbackName];
+            document.body.removeChild(script);
+            callback(data);
+        };
 
-            var jsonResponse = JSON.parse(responseText);
-            var jsonResults = jsonResponse.result.results;
+        var script = document.createElement('script');
+        script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + callbackName;
+        document.body.appendChild(script);
+    }
 
-            for (var i=0; i<jsonResults.length; i++) {
-                var jsonResult = jsonResults[i];
-                var jsonResources = jsonResult.resources;
+    /*var _retrieveListOfDatasets = function(baseUrl, userCallback) {
+        httpGetAsync(baseUrl, );
+    };//EndFunction.*/
 
-                //The dataset to retrieve to the calling function.
-                var rtnDataset = {
-                    title: jsonResult.title,
-                    licenseId: jsonResult.license_id,
-                    licenseName: jsonResult.license_title,
-                    resources: []
+    var _processListOfDatasets = function(jsonResponse, userCallback) {
+        var datasets = [];
+
+        var jsonResults = jsonResponse.result.results;
+
+        for (var i=0; i<jsonResults.length; i++) {
+            var jsonResult = jsonResults[i];
+            var jsonResources = jsonResult.resources;
+
+            //The dataset to retrieve to the calling function.
+            var rtnDataset = {
+                title: jsonResult.title,
+                licenseId: jsonResult.license_id,
+                licenseName: jsonResult.license_title,
+                resources: []
+            };
+
+            //TODO: Check here whether the dataset is private and active.
+            //console.log("state " + jsonResult.state);
+            //console.log("private " + jsonResult.private);
+
+            for (var j=0; j<jsonResources.length; j++) {
+                var jsonResource = jsonResources[j];
+
+                var parsedUrl = URLUtils.ParseString(jsonResource.url);
+                var pageUrl = parsedUrl.host + "/dataset/" + jsonResult.name + "/resource/" + jsonResource.id;
+
+                var rtnResource = {
+                    id: jsonResource.id,
+                    name: jsonResource.name,
+                    format: jsonResource.format,
+                    url: jsonResource.url,
+                    pageUrl: pageUrl
                 };
+                rtnDataset.resources.push(rtnResource)
+            }//EndForJ.
 
-                //TODO: Check here whether the dataset is private and active.
-                //console.log("state " + jsonResult.state);
-                //console.log("private " + jsonResult.private);
+            datasets.push(rtnDataset);
+        }//EndForI.
 
-                for (var j=0; j<jsonResources.length; j++) {
-                    var jsonResource = jsonResources[j];
-
-                    var idx = baseUrl.indexOf("/api");
-                    var pageUrl = baseUrl.substring(0, idx) + "/dataset/" + jsonResult.name + "/resource/" + jsonResource.id;
-
-                    var rtnResource = {
-                        id: jsonResource.id,
-                        name: jsonResource.name,
-                        format: jsonResource.format,
-                        url: jsonResource.url,
-                        pageUrl: pageUrl
-                    };
-                    rtnDataset.resources.push(rtnResource)
-                }//EndForJ.
-
-                datasets.push(rtnDataset);
-            }//EndForI.
-
-            userCallback(datasets);
-        });
-    };//EndFunction.
+        userCallback(datasets);
+    };
 
     //Public object content.
     return {
@@ -94,9 +108,23 @@ CKANClient.prototype = (function() {
          * @param baseUrl
          * @param userCallback
          */
-        listDatasets: function (baseUrl, userCallback) {
+        listDatasets: function (baseUrl, userCallback, options) {
+            if (typeof options === 'undefined')
+                options = { jsonp: true };
+
             var apiListDataset = baseUrl + "/api/3/action/package_search" + "?rows=10000";
-            _retrieveListOfDatasets(apiListDataset, userCallback);
+
+            if (options.jsonp) {
+                apiListDataset += '&callback=myfunction';
+                jsonp(apiListDataset, function (jsonResponse) {
+                    _processListOfDatasets(jsonResponse, userCallback);
+                });
+            } else
+                //Make http request.
+                httpGetAsync(apiListDataset, function(responseText) {
+                    var jsonResponse = JSON.parse(responseText);
+                    _processListOfDatasets(jsonResponse, userCallback);
+                });
         }//EndFunction.
 
     };
