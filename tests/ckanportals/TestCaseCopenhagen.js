@@ -24,6 +24,7 @@ runTests();
 function runTests() {
 
     var baseUrl = "http://data.kk.dk";
+    var baseUrlDataset = "http://wfs-kbhkort.kk.dk/k101/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=k101:biblioteker&outputFormat=csv&SRSNAME=EPSG:4326";
     var odc = new CKANClient();
 
     function runTest(datasets) {

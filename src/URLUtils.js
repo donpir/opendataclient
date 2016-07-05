@@ -31,3 +31,30 @@ URLUtils.ParseString = function (url) {
 
     return rtn;
 };//EndFunction.
+
+URLUtils.JSONP = function jsonp(url, callback) {
+    var callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
+    window[callbackName] = function(data) {
+        delete window[callbackName];
+        document.body.removeChild(script);
+        callback(data);
+    };
+
+    var script = document.createElement('script');
+    script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + callbackName;
+    document.body.appendChild(script);
+};//EndFunction.
+
+URLUtils.HTTPGetAsync = function(theUrl, callback, errorCallback) {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (xhttp.readyState == 4 && xhttp.status == 200)
+            callback(xhttp.responseText);
+    };
+    xhttp.onerror = function (XMLHttpRequest, textStatus, errorThrown) {
+        if (typeof errorCallback !== 'undefined')
+            errorCallback("Check DataStoreAPI.");
+    };
+    xhttp.open("GET", theUrl, true);//true for asynchronous.
+    xhttp.send(null);
+};//EndFunction.

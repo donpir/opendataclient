@@ -24,7 +24,7 @@ function CKANClient() {
 
 CKANClient.prototype = (function() {
 
-    var httpGetAsync = function(theUrl, callback, errorCallback) {
+    /*var httpGetAsync = function(theUrl, callback, errorCallback) {
         var xhttp = new XMLHttpRequest();
         xhttp.onreadystatechange = function() {
             if (xhttp.readyState == 4 && xhttp.status == 200)
@@ -36,23 +36,6 @@ CKANClient.prototype = (function() {
         };
         xhttp.open("GET", theUrl, true);//true for asynchronous.
         xhttp.send(null);
-    };//EndFunction.
-
-    function jsonp(url, callback) {
-        var callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
-        window[callbackName] = function(data) {
-            delete window[callbackName];
-            document.body.removeChild(script);
-            callback(data);
-        };
-
-        var script = document.createElement('script');
-        script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + callbackName;
-        document.body.appendChild(script);
-    }
-
-    /*var _retrieveListOfDatasets = function(baseUrl, userCallback) {
-        httpGetAsync(baseUrl, );
     };//EndFunction.*/
 
     var _processListOfDatasets = function(jsonResponse, userCallback) {
@@ -114,18 +97,18 @@ CKANClient.prototype = (function() {
             var apiListDataset = baseUrl + "/api/3/action/package_search" + "?rows=10000";
 
             if (options.jsonp) {
-                jsonp(apiListDataset, function (jsonResponse) {
+                URLUtils.JSONP(apiListDataset, function (jsonResponse) {
                     _processListOfDatasets(jsonResponse, userCallback);
                 });
             } else
                 //Make http request.
-                httpGetAsync(apiListDataset, function(responseText) {
+                URLUtils.HTTPGetAsync(apiListDataset, function(responseText) {
                     var jsonResponse = JSON.parse(responseText);
                     _processListOfDatasets(jsonResponse, userCallback);
                 }, function () {
                     //Error, it try to use JSONP, otherwise retrives the error.
                     console.log("CKANClient API: failed to load " + baseUrl + ", trying to use JSONP.");
-                    jsonp(apiListDataset, function (jsonResponse) {
+                    URLUtils.JSONP(apiListDataset, function (jsonResponse) {
                         _processListOfDatasets(jsonResponse, userCallback);
                     });
                 });
