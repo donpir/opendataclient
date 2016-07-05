@@ -31,7 +31,6 @@ CKANClient.prototype = (function() {
                 callback(xhttp.responseText);
         };
         xhttp.onerror = function (XMLHttpRequest, textStatus, errorThrown) {
-            console.log( 'The data failed to load :(' );
             if (typeof errorCallback !== 'undefined')
                 errorCallback("Check DataStoreAPI.");
         };
@@ -110,12 +109,11 @@ CKANClient.prototype = (function() {
          */
         listDatasets: function (baseUrl, userCallback, options) {
             if (typeof options === 'undefined')
-                options = { jsonp: true };
+                options = { jsonp: false };
 
             var apiListDataset = baseUrl + "/api/3/action/package_search" + "?rows=10000";
 
             if (options.jsonp) {
-                apiListDataset += '&callback=myfunction';
                 jsonp(apiListDataset, function (jsonResponse) {
                     _processListOfDatasets(jsonResponse, userCallback);
                 });
@@ -124,6 +122,12 @@ CKANClient.prototype = (function() {
                 httpGetAsync(apiListDataset, function(responseText) {
                     var jsonResponse = JSON.parse(responseText);
                     _processListOfDatasets(jsonResponse, userCallback);
+                }, function () {
+                    //Error, it try to use JSONP, otherwise retrives the error.
+                    console.log("CKANClient API: failed to load " + baseUrl + ", trying to use JSONP.");
+                    jsonp(apiListDataset, function (jsonResponse) {
+                        _processListOfDatasets(jsonResponse, userCallback);
+                    });
                 });
         }//EndFunction.
 

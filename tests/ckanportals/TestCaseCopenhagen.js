@@ -27,10 +27,10 @@ function runTests() {
     var odc = new CKANClient();
 
     function runTest(datasets) {
-        QUnit.test("Firenze CKAN listing datasets.", function(assert) {
+        QUnit.test("Copenaghen CKAN listing datasets.", function(assert) {
             assert.notEqual(datasets, null, "Dataset loading.");
             assert.ok(datasets.length > 0);
-            console.log("End Test.")
+            console.log("End Test Copenaghen.")
         });
     };
 

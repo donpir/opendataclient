@@ -30,7 +30,7 @@ function runTests() {
         QUnit.test("Firenze CKAN listing datasets.", function(assert) {
             assert.notEqual(datasets, null, "Dataset loading.");
             assert.ok(datasets.length > 0);
-            console.log("End Test.")
+            console.log("End Test Firenze.")
         });
 
     };
